@@ -1,63 +1,52 @@
-const API_KEY = '05d56c9ff7124c87bdd6f8991344e878';
-const BASE_URL = 'https://newsapi.org/v2/everything';
-const newsContainer = document.getElementById('news-container');
-const searchBtn = document.getElementById('searchBtn');
-const searchInput = document.getElementById('searchInput');
+var map = L.map('map').setView([0, 0], 2);
 
-// Fetch top headlines on page load
-window.addEventListener('DOMContentLoaded', () => {
-  fetchNews();
-});
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
 
-// Fetch news function
-async function fetchNews(query = '') {
-  let url = `${BASE_URL}?country=us&apiKey=${API_KEY}`;
-  if (query) {
-    url += `&q=${encodeURIComponent(query)}`;
-  }
-  newsContainer.innerHTML = '<p>Loading...</p>';
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-    displayNews(data.articles || []);
-  } catch (error) {
-    newsContainer.innerHTML = '<p>Error fetching news. Please try again later.</p>';
-  }
+var marker;
+
+function searchLocation() {
+  var query = document.getElementById('searchInput').value;
+  if (!query) return;
+
+  console.log("Searching for:", query);
+
+  fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query))
+    .then(response => response.json())
+    .then(data => {
+      if (data.length > 0) {
+        var lat = parseFloat(data[0].lat);
+        var lon = parseFloat(data[0].lon);
+
+        map.setView([lat, lon], 13);
+
+        if (marker) {
+          marker.setLatLng([lat, lon]);
+        } else {
+          marker = L.marker([lat, lon]).addTo(map);
+        }
+
+        const username = 'buffalochnage'; // Use your actual GeoNames username here
+
+        fetch(`https://secure.geonames.org/findNearbyPlaceNameJSON?lat=${lat}&lng=${lon}&username=${username}`)
+          .then(res => res.json())
+          .then(geo => {
+            console.log("GeoNames result:", geo);
+
+            if (geo.geonames && geo.geonames.length > 0) {
+              const place = geo.geonames[0];
+              const popupText = `
+                <strong>${place.name}, ${place.countryName}</strong><br/>
+                Admin: ${place.adminName1}<br/>
+                Population: ${place.population}<br/>
+                latitude: ${place.lat}, longitude: ${place.lng}
+              `;
+              marker.bindPopup(popupText).openPopup();
+            }
+          });
+      }
+    });
 }
 
-// Display news articles
-function displayNews(articles) {
-  newsContainer.innerHTML = '';
-  if (!articles.length) {
-    newsContainer.innerHTML = '<p>No news articles found.</p>';
-    return;
-  }
-  articles.forEach(article => {
-    const card = document.createElement('div');
-    card.className = 'news-card';
-    card.innerHTML = `
-      <img src="${article.urlToImage || 'https://via.placeholder.com/320x180?text=No+Image'}" alt="News Image">
-      <div class="content">
-        <h2>${article.title}</h2>
-        <p>${article.description || 'No description available.'}</p>
-        <p><strong>Source:</strong> ${article.source.name || 'Unknown'}</p>
-        <a href="${article.url}" target="_blank">Read More</a>
-      </div>
-    `;
-    newsContainer.appendChild(card);
-  });
-}
-
-// Search button event
-searchBtn.addEventListener('click', () => {
-  const query = searchInput.value.trim();
-  fetchNews(query);
-});
-
-// Optional: Enter key triggers search
-searchInput.addEventListener('keyup', event => {
-  if (event.key === 'Enter') {
-    fetchNews(searchInput.value.trim());
-  }
-});
 
