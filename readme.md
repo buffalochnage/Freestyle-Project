@@ -4,7 +4,7 @@ This is a responsive client-side web application that displays an interactive ma
 
 ---
 
-## 🌍 Features
+## Features
 
 - Search any place using OpenStreetMap/Nominatim
 - Display geographic details from the GeoNames API
@@ -20,17 +20,14 @@ This is a responsive client-side web application that displays an interactive ma
 Getting Started
 
 ### 1. Clone the repository
-```bash
-git clone https://github.com/YOUR_USERNAME/geo-map-search.git
-cd geo-map-search
-```
+utilizing the tutorial on https://www.youtube.com/watch?v=wVnimcQsuwk&list=PLJzAWumJxLJXgscjBxc3ufY62s9Xh8aob
 
 ### 2. Open the file
-Just open `index.html` in your browser.
+Just open `index.html``css.css``script.js` in the VS studio.
 
 ### 3. Setup GeoNames
-You need a free GeoNames username:
-- Sign up at https://www.geonames.org/login
+Applied for a free GeoNames username:
+- Sign up at https://www.geonames.org/login in same user name
 - Replace `buffalochnage` as my username
 
 ---
