@@ -1,29 +1,109 @@
-#map {
-  position: absolute;
-  top: 40px;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
 html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
 }
-#searchBox {
+
+#map {
   position: absolute;
-  top: 5px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
+  top: 80px;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
-#header {
+
+#topBar {
   position: absolute;
   top: 5px;
   left: 10px;
+  right: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background-color: white;
+  padding: 5px 10px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   z-index: 1001;
+}
+
+#header {
   color: black;
   font-weight: bold;
-  font-family: Arial, Helvetica, sans-serif;
   font-size: 16px;
+}
+
+#searchBox input,
+#searchBox button {
+  padding: 5px;
+  font-size: 14px;
+}
+
+#searchBox button:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+#history {
+  position: absolute;
+  top: 55px;
+  left: 10px;
+  background-color: white;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+#history span {
+  display: inline-block;
+  margin-right: 10px;
+  cursor: pointer;
+  color: #007bff;
+}
+
+#history span:hover {
+  text-decoration: underline;
+}
+
+#spinner {
+  position: absolute;
+  top: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  color: #333;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  display: none;
+}
+
+@media (max-width: 600px) {
+  #topBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #searchBox input {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+
+  #searchBox button {
+    width: 100%;
+  }
+
+  #map {
+    top: 140px;
+  }
+
+  #spinner {
+    top: 160px;
+  }
 }

@@ -68,6 +68,22 @@
     #history span:hover {
       text-decoration: underline;
     }
+
+    #spinner {
+      position: absolute;
+      top: 110px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2000;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      color: #333;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -76,11 +92,12 @@
     <div id="searchBox">
       <input type="text" id="searchInput" placeholder="Search location" />
       <button onclick="searchLocation()">Search</button>
+      <button onclick="surpriseMe()">Surprise Me!</button>
     </div>
   </div>
 
   <div id="history"><strong>Recent:</strong></div>
-
+  <div id="spinner">🔄 Loading...</div>
   <div id="map"></div>
 
   <script>
@@ -93,10 +110,18 @@
     var marker;
     var searchHistory = [];
 
+    function showSpinner() {
+      document.getElementById('spinner').style.display = 'block';
+    }
+
+    function hideSpinner() {
+      document.getElementById('spinner').style.display = 'none';
+    }
+
     function updateHistory(query) {
       if (!searchHistory.includes(query)) {
-        searchHistory.unshift(query); // add to front
-        if (searchHistory.length > 5) searchHistory.pop(); // keep max 5
+        searchHistory.unshift(query);
+        if (searchHistory.length > 5) searchHistory.pop();
       }
 
       const historyContainer = document.getElementById('history');
@@ -118,10 +143,12 @@
 
       console.log("Searching for:", query);
       updateHistory(query);
+      showSpinner();
 
       fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query))
         .then(response => response.json())
         .then(data => {
+          hideSpinner();
           if (data.length > 0) {
             var lat = parseFloat(data[0].lat);
             var lon = parseFloat(data[0].lon);
@@ -134,11 +161,13 @@
               marker = L.marker([lat, lon]).addTo(map);
             }
 
-            const username = 'buffalochnage'; // Replace with your GeoNames username
+            const username = 'buffalochnage';
 
+            showSpinner();
             fetch(`https://secure.geonames.org/findNearbyPlaceNameJSON?lat=${lat}&lng=${lon}&username=${username}`)
               .then(res => res.json())
               .then(geo => {
+                hideSpinner();
                 console.log("GeoNames result:", geo);
 
                 if (geo.geonames && geo.geonames.length > 0) {
@@ -151,12 +180,59 @@
                   `;
                   marker.bindPopup(popupText).openPopup();
                 }
+              })
+              .catch(() => {
+                hideSpinner();
+                marker.bindPopup("GeoNames fetch failed.").openPopup();
               });
           }
+        })
+        .catch(() => {
+          hideSpinner();
+          marker.bindPopup("Search failed.").openPopup();
         });
     }
 
-    // Trigger search on Enter key
+    function surpriseMe() {
+      const lat = (Math.random() * 180 - 90).toFixed(6);
+      const lon = (Math.random() * 360 - 180).toFixed(6);
+
+      map.setView([lat, lon], 5);
+
+      if (marker) {
+        marker.setLatLng([lat, lon]);
+      } else {
+        marker = L.marker([lat, lon]).addTo(map);
+      }
+
+      const username = 'buffalochnage';
+
+      showSpinner();
+      fetch(`https://secure.geonames.org/findNearbyPlaceNameJSON?lat=${lat}&lng=${lon}&username=${username}`)
+        .then(res => res.json())
+        .then(geo => {
+          hideSpinner();
+          console.log("GeoNames result:", geo);
+
+          if (geo.geonames && geo.geonames.length > 0) {
+            const place = geo.geonames[0];
+            const popupText = `
+              <strong>${place.name}, ${place.countryName}</strong><br/>
+              Admin: ${place.adminName1}<br/>
+              Population: ${place.population}<br/>
+              latitude: ${place.lat}, longitude: ${place.lng}
+            `;
+            marker.bindPopup(popupText).openPopup();
+          } else {
+            marker.bindPopup("🌍 You're in the middle of nowhere!").openPopup();
+          }
+        })
+        .catch(() => {
+          hideSpinner();
+          marker.bindPopup("GeoNames fetch failed.").openPopup();
+        });
+    }
+
     document.getElementById('searchInput').addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
         searchLocation();
